@@ -1,6 +1,5 @@
-import { Box, Container, TextField, Typography } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import React from "react";
-import { useState } from "react";
 import {
   withScriptjs,
   withGoogleMap,
@@ -13,13 +12,12 @@ const GymMap = withScriptjs(
   withGoogleMap(({ gyms, center }) => {
     const [selectedGym, setSelectedGym] = React.useState(null);
     const handleMarkerClick = (gym) => {
-      console.log(gym);
       setSelectedGym(gym);
     };
 
     return (
       <Container>
-        <Box sx={{ height: "500px" }}>
+        <Box sx={{ height: "500px" }}>  
           {gyms.length > 0 && (
             <GoogleMap defaultZoom={12} defaultCenter={center}>
               {gyms.map((gym) => (

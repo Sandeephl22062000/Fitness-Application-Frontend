@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
-import Hero from "./Frontpage/Hero";
-import ActivityFeed from "./Frontpage/ActivityFeeds";
-import TrainerPage from "./Frontpage/TrainerPage.jsx.js";
-import FoodPage from "./Frontpage/Foodpage";
-
-import ExerciseDatabase from "./Frontpage/ExerciseDatabase";
+import Hero from "./Dashboard.js";
+import ActivityFeed from "./ActivitySection.js";
+import TrainerPage from "./TrainerPortalSection.js";
+import FoodPage from "./DietSection.js";
+import ExerciseDatabase from "./ExerciseSection.js";
 const Homepage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
   return (
     <div>
       <Hero />

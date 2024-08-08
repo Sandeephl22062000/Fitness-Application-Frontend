@@ -4,7 +4,7 @@ import NotFoundPage from "../../images/notfoundimage.png";
 import { useNavigate } from "react-router-dom";
 const PageNotFound = () => {
   const navigate = useNavigate();
-  return (
+  return (  
     <Container
       sx={{
         display: "flex",

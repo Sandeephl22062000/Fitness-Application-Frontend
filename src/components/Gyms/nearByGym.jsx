@@ -47,11 +47,13 @@ const NearByGym = () => {
       const data = await axios.get(
         `http://localhost:8000/api/gyms/${currentLocation.latitude}/${currentLocation.longitude}`
       );
-      console.log(data);
+      console.log({ datafrom: data });
       setGyms(data?.data);
     }
     setLoading(false);
   };
+
+  console.log({ gymsData: gyms });
 
   useEffect(() => {
     fetchData();

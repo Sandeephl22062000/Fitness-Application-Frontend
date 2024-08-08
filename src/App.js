@@ -1,16 +1,15 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "./components/Navbar/Navbar";
-import Homepage from "./components/Homepage";
+import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer/Footer";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Food } from "./components/Food/Food";
 import TrainerCards from "./components/Trainer-Info/TrainerCards";
 import TrainerProfile from "./components/TrainerMyProfile/TrainerProfile";
 import Exercises from "./components/Exercises/Exercises";
 import ExerciseVideos from "./components/Exercises/ExerciseVideo";
 import Signup from "./components/Auth/signup";
-import UserInput from "./components/Food/userInput";
+import UserInput from "./components/Food";
 import Login from "./components/Auth/login";
 import CalorieDetail from "./components/Food/calorieCalculation";
 import TrainerSigup from "./components/Auth/trainerSignup";
@@ -20,11 +19,11 @@ import ExeprmientFoodApi from "./components/Food/FoodTracking";
 import Profile from "./components/MyProfile";
 import ProfileToShow from "./components/ProfileToShow";
 import ViewAllRecords from "./components/Food/ViewAllRecords";
-import Gym from "./components/Gyms/nearByGym";
+import Gym from "./components/Gyms/NearByGym";
 import Createservices from "./components/createservices";
 import { useSelector } from "react-redux";
 import Protected from "./ProtectingRoutes";
-import PageNotFound from "./components/Frontpage/PageNotFound";
+import PageNotFound from "./components/404Page";
 
 const App = () => {
   const isLoggedIn = useSelector((state) => state?.user?.token);
@@ -34,17 +33,16 @@ const App = () => {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          <Route path="/" element={<Homepage />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/trainersignup" element={<TrainerSigup />} />
-
           <Route
             path="/food"
             element={
-              // <Protected isLoggedIn={isLoggedIn}>
-              <UserInput />
-              // </Protected>
+              <Protected isLoggedIn={isLoggedIn}>
+                <UserInput />
+              </Protected>
             }
           />
           <Route
@@ -115,7 +113,6 @@ const App = () => {
               </Protected>
             }
           />
-
           <Route
             path="/execiseVideos/:muscle/:exercise"
             element={

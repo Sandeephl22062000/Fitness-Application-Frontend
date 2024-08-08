@@ -183,7 +183,7 @@ export default function BasicSelect() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              minHeight: "100vh",
+              minHeight: { sm: "100vh", xs: "60vh" },
             }}
           >
             <CircularProgress sx={{ color: "black" }} />
