@@ -73,9 +73,9 @@ const App = () => {
           <Route
             path="/trainer"
             element={
-              // <Protected isLoggedIn={isLoggedIn}>
-              <TrainerCards />
-              // </Protected>
+              <Protected isLoggedIn={isLoggedIn}>
+                <TrainerCards />
+              </Protected>
             }
           />
           <Route

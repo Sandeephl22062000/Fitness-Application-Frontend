@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { UserByID } from "../../store/user";
 
 const authSlice = createSlice({
   name: "user",

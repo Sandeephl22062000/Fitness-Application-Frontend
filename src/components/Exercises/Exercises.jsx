@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -8,38 +8,37 @@ import { Button, Container, Pagination, Stack } from "@mui/material";
 import Card from "react-bootstrap/Card";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
-import axiosInstance from "../../utils/axiosInstance";
 import { bodyParts } from "../../utils/bodyPartExercises";
 import { CapitalLetterCOnversions } from "../../utils/commonFunctions";
-import { useSelector } from "react-redux";
+import {
+  useGetExercisesQuery,
+  useLazyGetSortedExercisesQuery,
+} from "../../api/exerciseApi";
 
 export default function BasicSelect() {
   const [muscle, setMuscle] = useState("");
-  const [data, setData] = useState([]);
   const [difficulty, setDifficulty] = useState("");
   const [exercise, setExercise] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [TotalPage, setTotalPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
-  const token = useSelector((state) => state.user);
-  const auth = useSelector((state) => state.auth);
+  const { data: exercisesArray, isLoading: isExerciseLoading } =
+    useGetExercisesQuery();
+  const [trigger, { isLoading: isSortedExerciseLoading }] =
+    useLazyGetSortedExercisesQuery();
 
-  console.log({ token, auth });
-
-  const clickHandler = async (currentPage) => {
-    setIsLoading(true);
-    try {
-      const { data } = await axiosInstance.get(
-        `/exercise/sortedExercises?muscle=${muscle}&difficulty=${difficulty}&page=${currentPage}`
-      );
-      setTotalPage(data.totalPages);
-      setExercise(data.exercises);
-      setIsLoading(false);
-    } catch (error) {
-      throw error;
-    }
-  };
+  const clickHandler = useCallback(
+    async (currentPage) => {
+      try {
+        const getData = await trigger({ muscle, difficulty, currentPage });
+        setTotalPage(getData.data.totalPages);
+        setExercise(getData.data.exercises);
+      } catch (error) {
+        throw error;
+      }
+    },
+    [currentPage]
+  );
 
   const VideoHandler = (muscleName, exerciseName) => {
     navigate(`/execiseVideos/${exerciseName}/${muscleName}`);
@@ -50,22 +49,10 @@ export default function BasicSelect() {
     clickHandler(page);
   };
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await axiosInstance.get("/exercise");
-      const dataToShow = data.exercises;
-      setData(dataToShow.slice(0, 4));
-      setIsLoading(false);
-    } catch (error) {
-      throw error;
-    }
-  };
-
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchData();
-  }, [exercise]);
+    setExercise(exercisesArray?.exercises);
+  }, [exercisesArray]);
 
   return (
     <>
@@ -125,61 +112,33 @@ export default function BasicSelect() {
             Search
           </Button>
         </Box>
-        {!isLoading ? (
+        {!isSortedExerciseLoading && !isExerciseLoading ? (
           <Container sx={{ margin: "4rem 0" }}>
-            {exercise?.length > 0
-              ? exercise?.map((e) => (
-                  <Box style={{ margin: "10px" }}>
-                    <Card border="secondary" style={{ width: "100%" }}>
-                      <Card.Header>{e.name}</Card.Header>
-                      <Card.Body>
-                        <Card.Title>
-                          Equipment Required :{" "}
-                          {CapitalLetterCOnversions(e.equipment)}
-                        </Card.Title>
-                        <Card.Title>Targeted Muscle : {e.muscle}</Card.Title>
-                        <Card.Text>
-                          Instruction:
-                          <br />
-                          {e.instructions}
-                        </Card.Text>
-                      </Card.Body>
-                      <Button
-                        sx={{ color: "black" }}
-                        onClick={() => VideoHandler(e.name, e.muscle)}
-                      >
-                        View Video
-                      </Button>
-                    </Card>
-                  </Box>
-                ))
-              : data?.map((e) => (
-                  <Box style={{ margin: "10px" }}>
-                    <Card border="secondary" style={{ width: "100%" }}>
-                      <Card.Header>{e.name}</Card.Header>
-                      <Card.Body>
-                        <Card.Title>
-                          Equipment Required :{" "}
-                          {CapitalLetterCOnversions(e.equipment)}
-                        </Card.Title>
-                        <Card.Title>
-                          Targeted Muscle : {CapitalLetterCOnversions(e.muscle)}
-                        </Card.Title>
-                        <Card.Text>
-                          Instruction:
-                          <br />
-                          {e.instructions}
-                        </Card.Text>
-                      </Card.Body>
-                      <Button
-                        sx={{ color: "black" }}
-                        onClick={() => VideoHandler(e.name, e.muscle)}
-                      >
-                        View Video
-                      </Button>
-                    </Card>
-                  </Box>
-                ))}
+            {exercise?.map((e) => (
+              <Box style={{ margin: "10px" }}>
+                <Card border="secondary" style={{ width: "100%" }}>
+                  <Card.Header>{e.name}</Card.Header>
+                  <Card.Body>
+                    <Card.Title>
+                      Equipment Required :{" "}
+                      {CapitalLetterCOnversions(e.equipment)}
+                    </Card.Title>
+                    <Card.Title>Targeted Muscle : {e.muscle}</Card.Title>
+                    <Card.Text>
+                      Instruction:
+                      <br />
+                      {e.instructions}
+                    </Card.Text>
+                  </Card.Body>
+                  <Button
+                    sx={{ color: "black" }}
+                    onClick={() => VideoHandler(e.name, e.muscle)}
+                  >
+                    View Video
+                  </Button>
+                </Card>
+              </Box>
+            ))}
           </Container>
         ) : (
           <Box

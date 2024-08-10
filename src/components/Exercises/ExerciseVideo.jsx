@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import YouTube from "react-youtube";
-import axios from "axios";
+import { useLazyGetExerciseVideosQuery } from "../../api/exerciseApi";
 
 const ExerciseVideo = () => {
   const [Videos, setVideos] = useState([]);
@@ -24,7 +24,7 @@ const ExerciseVideo = () => {
   const params = useParams();
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [trigger, { isLoading }] = useLazyGetExerciseVideosQuery();
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -44,16 +44,9 @@ const ExerciseVideo = () => {
   const exerciseName = params?.exercise;
 
   const fetchVideos = async () => {
-    setIsLoading(true);
-    console.log(params);
     const maxResults = 22;
-    const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
-
-    const { data } = await axios.get(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${exerciseName} ${muscles} workout tutorial&type=video&maxResults=${maxResults}&key=${apiKey}`
-    );
+    const { data } = await trigger({ exerciseName, muscles, maxResults });
     setVideos(data.items);
-    setIsLoading(false);
   };
 
   useEffect(() => {
