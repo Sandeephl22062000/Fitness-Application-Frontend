@@ -25,9 +25,11 @@ import GoogleIcon from "../../images/Google__G__Logo.svg.webp";
 import { registerUser, setToken } from "../../store/user";
 import { useDispatch } from "react-redux";
 import signupValidationSchema from "../schema/schema";
+import { useRegisterMutation } from "../../api/authApi";
 
 const Signup = () => {
   const [images, setImages] = useState("");
+  const [register] = useRegisterMutation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { addToast } = useToasts();
@@ -64,13 +66,13 @@ const Signup = () => {
     localStorage.setItem("token", token);
     dispatch(setToken(token));
     navigate("/");
-
     addToast(data?.message, {
       appearance: "success",
       autoDismiss: true,
       autoDismissTimeout: 3000,
     });
   };
+
   const login = useGoogleLogin({ onSuccess: handleGoogleLoginSuccess });
 
   const formik = useFormik({
@@ -82,6 +84,13 @@ const Signup = () => {
     },
     validationSchema: signupValidationSchema,
     onSubmit: (values, { resetForm }) => {
+      register({
+        name: values.fullName,
+        email: values.email,
+        password: values.password,
+        photo: images,
+        role: 0,
+      });
       dispatch(
         registerUser({
           name: values.fullName,

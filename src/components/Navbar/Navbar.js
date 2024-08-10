@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { UserByID, logout } from "../../store/user";
 import { useEffect } from "react";
 import FitnessLogo from "./../../images/Fitness.jpg";
+import { logOutUser } from "../../features/users/authSlice";
 const pages = ["Food", "Exercise", "Trainer", "Activities", "Gyms"];
 
 function ResponsiveAppBar() {
@@ -26,17 +27,21 @@ function ResponsiveAppBar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const open = Boolean(anchorEl);
+
   const handleClickRegister = (event) => {
     setAnchorElRegister(event.currentTarget);
   };
+
   const handleUserSign = () => {
     navigate("/signup");
     setAnchorElRegister(null);
   };
+
   const handleTrainerSignup = () => {
     navigate("/trainersignup");
     setAnchorElRegister(null);
   };
+
   const handleUserLogin = () => {
     navigate("/login");
     setAnchorElUser(null);
@@ -45,8 +50,6 @@ function ResponsiveAppBar() {
   const token = useSelector((state) => state?.user?.token);
 
   const user = useSelector((state) => state?.user?.FindUserByID);
-  console.log(user);
-  useEffect(() => {}, [token, dispatch]);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -67,10 +70,11 @@ function ResponsiveAppBar() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
   const handleLogout = () => {
-    dispatch(UserByID());
-    dispatch(logout());
+    dispatch(logOutUser());
   };
+
   return (
     <AppBar position="static" sx={{ background: "black" }}>
       <Container maxWidth="xl">
@@ -150,7 +154,7 @@ function ResponsiveAppBar() {
               </Button>
             ))}
           </Box>
-          {token !== null ? (
+          {token && token !== null ? (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

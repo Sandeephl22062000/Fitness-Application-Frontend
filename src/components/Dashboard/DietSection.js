@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Button, Container, Typography } from "@mui/material";
-import backgroundImage from "../../images/backGorund.jpg";
+// import backgroundImage from "../../images/backGorund.jpg";
 import { useNavigate } from "react-router-dom";
 
 const BackgroundImageContainer = () => {
@@ -12,8 +12,9 @@ const BackgroundImageContainer = () => {
   return (
     <Box
       sx={{
-        backgroundImage: `url(${backgroundImage})`,
+        // backgroundImage: `url(${backgroundImage})`,
         backgroundSize: "cover",
+        background: "black",
         backgroundPosition: "center",
         height: { xs: "60vh", sm: "100vh" },
         display: "flex",

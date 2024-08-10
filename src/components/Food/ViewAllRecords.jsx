@@ -13,7 +13,7 @@ import { useSelector } from "react-redux";
 import { useState } from "react";
 import { ModalClose, ModalDialog } from "@mui/joy";
 import { Link, useNavigate } from "react-router-dom";
-import DeleteRecordsModal from "./DeleteRecordsModal";
+import DeleteRecordsModal from "./deleteRecordModal";
 export default function BasicTable() {
   const [data, setData] = useState([]);
   const [variant, setVariant] = React.useState(undefined);

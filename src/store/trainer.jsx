@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import client from "../features/client";
 import axios from "axios";
 
 const initialTrainer = {

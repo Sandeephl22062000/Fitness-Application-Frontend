@@ -19,16 +19,16 @@ import { useToasts } from "react-toast-notifications";
 import { useEffect } from "react";
 import PriorInfoModal from "./priorData";
 import userInputValidation from "../schema/userInputFood";
-import { textAlign } from "@mui/system";
+import { useRequireCaloriesMutation } from "../../api/dietApi";
 
 const UserInput = () => {
+  const [requireCalories] = useRequireCaloriesMutation();
   const { addToast } = useToasts();
   const [modalOpen, setModalOpen] = useState(false);
   const [dataAvailable, setDataAvailable] = useState(false);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = useSelector((state) => state.user.token);
+  const token = useSelector((state) => state?.user?.token);
   const priorData = useSelector((state) => state?.food?.priorUserDetails);
 
   const formik = useFormik({
@@ -41,17 +41,14 @@ const UserInput = () => {
     },
     validationSchema: userInputValidation,
     onSubmit: (values, { resetForm }) => {
-      dispatch(
-        calculateCalories({
-          weight: values.weight,
-          height: values.height,
-          age: values.age,
-          gender: values.gender,
-          activity: values.activity,
-          addToast,
-          token,
-        })
-      );
+      requireCalories({
+        weight: values.weight,
+        height: values.height,
+        age: values.age,
+        gender: values.gender,
+        activity: values.activity,
+      });
+      resetForm();
       navigate(`/food/calculateCalories`);
     },
   });

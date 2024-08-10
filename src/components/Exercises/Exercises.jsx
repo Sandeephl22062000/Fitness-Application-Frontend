@@ -5,14 +5,14 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Button, Container, Pagination, Stack } from "@mui/material";
-import axios from "axios";
 import Card from "react-bootstrap/Card";
 import { useNavigate } from "react-router-dom";
-
 import CircularProgress from "@mui/material/CircularProgress";
 import axiosInstance from "../../utils/axiosInstance";
 import { bodyParts } from "../../utils/bodyPartExercises";
 import { CapitalLetterCOnversions } from "../../utils/commonFunctions";
+import { useSelector } from "react-redux";
+
 export default function BasicSelect() {
   const [muscle, setMuscle] = useState("");
   const [data, setData] = useState([]);
@@ -22,6 +22,10 @@ export default function BasicSelect() {
   const [TotalPage, setTotalPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+  const token = useSelector((state) => state.user);
+  const auth = useSelector((state) => state.auth);
+
+  console.log({ token, auth });
 
   const clickHandler = async (currentPage) => {
     setIsLoading(true);

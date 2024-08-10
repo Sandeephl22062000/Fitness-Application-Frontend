@@ -1,20 +1,15 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
-import user from "./user";
-import post from "./post";
-import food from "./food";
-import trainer from "./trainer";
-const middleware = getDefaultMiddleware({
-  serializableCheck: false,
-});
+import { configureStore } from "@reduxjs/toolkit";
+import { authApi } from "../api/authApi.js";
+import { setupListeners } from "@reduxjs/toolkit/query";
+import authReducer from "../features/users/authSlice";
 
-const store = configureStore({
+export const store = configureStore({
   reducer: {
-    user,
-    trainer,
-    post,
-    food,
+    [authApi.reducerPath]: authApi.reducer,
+    user: authReducer,
   },
-  middleware,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(authApi.middleware),
 });
 
-export default store;
+setupListeners(store.dispatch);
