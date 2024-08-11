@@ -145,6 +145,11 @@ const ExerciseVideo = () => {
             <Modal
               open={isModalOpen}
               onClose={handleModalClose}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
               aria-labelledby="video-modal-title"
               aria-describedby="video-modal-description"
               closeAfterTransition
@@ -161,7 +166,6 @@ const ExerciseVideo = () => {
                   left: "50%",
                   transform: "translate(-50%, -50%)",
                   width: "80%",
-                  height: "80%",
                   maxWidth: "800px",
                   maxHeight: "80%",
                   backgroundColor: "black",

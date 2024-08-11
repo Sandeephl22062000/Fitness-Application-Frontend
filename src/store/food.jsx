@@ -124,7 +124,6 @@ export const deleteCaloryTracked = createAsyncThunk(
           },
         }
       );
-      const { data } = response;
       return recordID;
     } catch (error) {
       console.log(error);
@@ -149,8 +148,6 @@ const foodSlice = createSlice({
       })
       .addCase(calculateCalories.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("");
-
         state.calculateFoodCalories = action.payload;
       })
       .addCase(calculateCalories.rejected, (state, action) => {

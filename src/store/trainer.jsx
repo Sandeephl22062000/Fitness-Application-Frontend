@@ -202,7 +202,6 @@ export const editServices = createAsyncThunk(
 export const deleteServices = createAsyncThunk(
   "/trainer/deleteServices",
   async ({ id, token }) => {
-    console.log(id);
     const postData = await axios.delete(
       `http://localhost:8000/api/trainer/deleteServices/${id}`,
       {

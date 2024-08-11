@@ -18,7 +18,6 @@ const ClientsRequests = () => {
   useEffect(() => {
     dispatch(getClients({ token }));
   }, []);
-  console.log();
   return (
     <Container>
       {clients?.length > 0 ? (
