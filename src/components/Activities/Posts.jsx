@@ -15,9 +15,8 @@ import ModeCommentOutlined from "@mui/icons-material/ModeCommentOutlined";
 import { Container, Button } from "@mui/material";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import { useParams } from "react-router-dom";
 
 const Post = (props) => {
   const token = useSelector((state) => state.user.token);
@@ -134,9 +133,9 @@ const Post = (props) => {
         </CardContent>
         <CardOverflow>
           <AspectRatio>
-            {props.post?.video && (
+            {props.post?.fileType.includes("video") ? (
               <video
-                src={props.post?.video}
+                src={props.post?.signedUrl}
                 controls
                 style={{
                   position: "absolute",
@@ -147,10 +146,9 @@ const Post = (props) => {
                   objectFit: "cover",
                 }}
               />
-            )}
-            {!props.post?.video && (
+            ) : (
               <img
-                src={props.post?.image}
+                src={props.post?.signedUrl}
                 alt=""
                 loading="lazy"
                 style={{
@@ -237,7 +235,7 @@ const Post = (props) => {
             pb: "var(--Card-padding)",
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-start", // Align items to the left
+            justifyContent: "flex-start",
           }}
         >
           <form onSubmit={addCommentHandler} style={{ display: "flex" }}>

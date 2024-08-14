@@ -1,127 +1,69 @@
-import { Grid } from "@mui/material";
 import { Container } from "@mui/material";
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
 import ModalDialog from "@mui/joy/ModalDialog";
-import Typography from "@mui/joy/Typography";
 import { Box } from "@mui/system";
 import CircularProgress from "@mui/material/CircularProgress";
-
-import {
-  ref as addRef,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
-import storage from "../../utils/firebase";
 import "./AddPost.css";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import axios from "axios";
-import { useSelector } from "react-redux";
+import { useCreatePostsMutation } from "../../api/posts";
 
-const AddPost = ({ setNewPost }) => {
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [selectedVideo, setSelectedVideo] = useState(null);
+const AddPost = ({ refetch }) => {
+  const [media, setMedia] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [caption, setCaption] = useState("");
   const [variant, setVariant] = useState(undefined);
   const [variant2, setVariant2] = useState(undefined);
-  const [isLoading, setIsLoading] = useState(false);
-  const token = useSelector((state) => state.user.token);
+  const [createPost, { isSuccess, isLoading }] = useCreatePostsMutation();
 
-  const photoupload = (event) => {
-    setIsLoading(true);
-    let file = event.target.files[0];
-    if (!file) {
-      alert("Please upload an image first!");
+  const uploadMedia = async () => {
+    if (!media) {
+      console.error("No media file selected.");
+      return;
     }
-    const storageRef = addRef(storage, `/files/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {},
-      (err) => {
-        setIsLoading(false);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          setSelectedPhoto(url);
-          setIsLoading(false);
-        });
-      }
-    );
-  };
+    const formData = new FormData();
+    formData.append("file", media);
+    formData.append("caption", caption);
+    await createPost(formData);
 
-  const videoupload = (event) => {
-    setIsLoading(true);
-    let file = event.target.files[0];
-    if (!file) {
-      alert("Please upload a video first!");
-    }
-    const storageRef = addRef(storage, `/videos/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {},
-      (err) => {
-        setIsLoading(false);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          setSelectedVideo(url);
-          setIsLoading(false);
-        });
-      }
-    );
-    setIsLoading(false);
+    console.log("it is executed");
   };
 
   const handlePhotoUpload = (event) => {
-    photoupload(event);
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+    setMedia(file);
   };
 
   const handleVideoUpload = (event) => {
-    videoupload(event);
+    uploadMedia(event);
   };
 
   const handleCaptionChange = (event) => {
     setCaption(event.target.value);
   };
 
-  const handleCloseModal = () => {
-    setVariant2(undefined);
-  };
-
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
-    const createPost = async () => {
-      const data = await axios.post(
-        "api/post/new",
-        {
-          caption: caption,
-          image: selectedPhoto,
-          video: selectedVideo,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setNewPost(data?.data?.post);
-      setVariant(undefined);
-      setCaption("");
-      setSelectedPhoto("");
-      setSelectedVideo("");
-    };
     try {
-      createPost();
+      await uploadMedia();
     } catch (error) {
       throw error;
     }
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      setVariant(undefined);
+      refetch();
+    }
+  }, [isSuccess]);
 
   return (
     <Container
@@ -154,7 +96,13 @@ const AddPost = ({ setNewPost }) => {
           Upload Photo / Video
         </Button>
       </Box>
-      <Modal open={!!variant} onClose={() => setVariant(undefined)}>
+      <Modal
+        open={!!variant}
+        onClose={() => {
+          setPreview(null);
+          setVariant(undefined);
+        }}
+      >
         <ModalDialog
           aria-labelledby="variant-modal-title"
           aria-describedby="variant-modal-description"
@@ -185,10 +133,10 @@ const AddPost = ({ setNewPost }) => {
               >
                 {isLoading ? (
                   <CircularProgress sx={{ color: "black" }} />
-                ) : selectedPhoto || selectedVideo ? (
-                  selectedPhoto ? (
+                ) : preview ? (
+                  media.type.split("/")[0] === "image" ? (
                     <img
-                      src={selectedPhoto}
+                      src={preview}
                       alt="Preview"
                       style={{
                         width: "200px",
@@ -198,7 +146,7 @@ const AddPost = ({ setNewPost }) => {
                     />
                   ) : (
                     <video
-                      src={selectedVideo}
+                      src={preview}
                       controls
                       style={{
                         width: "200px",

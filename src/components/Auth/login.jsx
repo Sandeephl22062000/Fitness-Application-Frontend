@@ -38,18 +38,33 @@ const Login = () => {
     validationSchema: loginValidationSchema,
     onSubmit: async ({ email, password }, { resetForm }) => {
       try {
-        const { data } = await loginUser({
+        const { data, error } = await loginUser({
           email,
           password,
         });
-        dispatch(loggedInUser({ token: data?.token, user: data?.data }));
-        addToast(data?.message, {
-          appearance: "success",
-          autoDismiss: true,
-          autoDismissTimeout: 3000,
-        });
-        navigate(location.state?.from || "/");
-        resetForm();
+        console.log({ data, error, isSuccess });
+        if (data?.data) {
+          dispatch(loggedInUser({ token: data?.token, user: data?.data }));
+          addToast(data?.message, {
+            appearance: "success",
+            autoDismiss: true,
+            autoDismissTimeout: 3000,
+          });
+          navigate(location.state?.from || "/");
+          resetForm();
+        } else if (error?.data) {
+          addToast(error.data.message, {
+            appearance: "error",
+            autoDismiss: true,
+            autoDismissTimeout: 3000,
+          });
+        } else {
+          addToast("Network error : Please check your internet connection", {
+            appearance: "error",
+            autoDismiss: true,
+            autoDismissTimeout: 3000,
+          });
+        }
       } catch (error) {
         addToast(error.message, {
           appearance: "error",

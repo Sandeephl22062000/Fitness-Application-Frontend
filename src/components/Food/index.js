@@ -119,7 +119,7 @@ const UserInput = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.height && Boolean(formik.errors.height)}
             helperText={formik.touched.height && formik.errors.height}
-            sx={{ width: "100%", mb: 2 }}
+            sx={{ width: "100%", margin: "8px" }}
           />
           <TextField
             required

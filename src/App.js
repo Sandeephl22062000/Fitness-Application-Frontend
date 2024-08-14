@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar/Navbar";
 import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer/Footer";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import TrainerCards from "./components/Trainer-Info/TrainerCards";
+import TrainerCards from "./components/Trainer-Info";
 import TrainerProfile from "./components/TrainerMyProfile/TrainerProfile";
 import Exercises from "./components/Exercises/Exercises";
 import ExerciseVideos from "./components/Exercises/ExerciseVideo";
@@ -69,7 +69,6 @@ const App = () => {
               </Protected>
             }
           />
-
           <Route
             path="/trainer"
             element={

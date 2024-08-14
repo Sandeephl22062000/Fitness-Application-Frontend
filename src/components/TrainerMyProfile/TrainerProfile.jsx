@@ -7,10 +7,8 @@ import Button from "@mui/joy/Button";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
-import Sheet from "@mui/joy/Sheet";
 import Posts from "./TrainerProfilePostCard";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
 import Viewplans from "../Trainer-Info/viewPlans";
 
 const style = {
@@ -49,7 +47,6 @@ const ProfilePage = () => {
     window.scrollTo(0, 0);
     trainerDetail();
   }, []);
-
 
   return (
     <Container
