@@ -15,7 +15,6 @@ const AddPost = ({ refetch }) => {
   const [preview, setPreview] = useState(null);
   const [caption, setCaption] = useState("");
   const [variant, setVariant] = useState(undefined);
-  const [variant2, setVariant2] = useState(undefined);
   const [createPost, { isSuccess, isLoading }] = useCreatePostsMutation();
 
   const uploadMedia = async () => {
@@ -27,11 +26,9 @@ const AddPost = ({ refetch }) => {
     formData.append("file", media);
     formData.append("caption", caption);
     await createPost(formData);
-
-    console.log("it is executed");
   };
 
-  const handlePhotoUpload = (event) => {
+  const handleMediaUpload = (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -39,10 +36,6 @@ const AddPost = ({ refetch }) => {
     };
     reader.readAsDataURL(file);
     setMedia(file);
-  };
-
-  const handleVideoUpload = (event) => {
-    uploadMedia(event);
   };
 
   const handleCaptionChange = (event) => {
@@ -61,9 +54,14 @@ const AddPost = ({ refetch }) => {
   useEffect(() => {
     if (isSuccess) {
       setVariant(undefined);
+      setMedia(null);
+      setPreview(null);
+      setCaption(null);
       refetch();
     }
   }, [isSuccess]);
+
+  console.log({ media });
 
   return (
     <Container
@@ -168,32 +166,12 @@ const AddPost = ({ refetch }) => {
                         },
                       }}
                     >
-                      Add Photo
+                      Add Media
                       <input
                         type="file"
-                        onChange={handlePhotoUpload}
+                        onChange={handleMediaUpload}
                         style={{ display: "none" }}
-                        accept="image/*"
-                      />
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      sx={{
-                        background: "black",
-                        color: "white",
-                        margin: "0.5rem",
-                        "&:hover": {
-                          background: "black",
-                        },
-                      }}
-                    >
-                      Add Video
-                      <input
-                        type="file"
-                        onChange={handleVideoUpload}
-                        style={{ display: "none" }}
-                        accept="video/*"
+                        accept="image/*,video/*"
                       />
                     </Button>
                   </div>

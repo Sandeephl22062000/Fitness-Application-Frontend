@@ -1,5 +1,4 @@
 import * as React from "react";
-import axios from "axios";
 import AspectRatio from "@mui/joy/AspectRatio";
 import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
@@ -12,43 +11,53 @@ import Input from "@mui/joy/Input";
 import Typography from "@mui/joy/Typography";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import ModeCommentOutlined from "@mui/icons-material/ModeCommentOutlined";
-import { Container, Button } from "@mui/material";
+import {
+  Container,
+  Button,
+  MenuItem,
+  Menu,
+  Modal,
+  List,
+  ListSubheader,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useAddCommentMutation, useAddLikeMutation } from "../../api/posts";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
 const Post = (props) => {
-  const token = useSelector((state) => state.user.token);
   const [likeCount, setLikeCount] = React.useState(props?.post?.likes?.length);
   const id = localStorage.getItem("id");
-  const [isLiked, setIsLiked] = React.useState(
-    props.post?.likes?.includes(id) || false
-  );
+  const [isLiked, setIsLiked] = React.useState(false);
   const [comment, setComment] = useState("");
+  const [deleteComment, setDeleteComment] = useState(false);
   const [showComment, setShowComment] = useState([]);
+  const [shareModal, setShareModal] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [addComment, { isSuccess }] = useAddCommentMutation();
+  const [like] = useAddLikeMutation();
+
+  const addLike = async () => {
+    try {
+      await like({
+        postId: props?.post._id,
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const handleLike = () => {
-    const addLike = async () => {
-      try {
-        const data = await axios.post(
-          `/api/post/likepost/${props.post._id}`,
-          {},
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      } catch (error) {
-        throw error;
-      }
-    };
-
     if (isLiked) {
       setIsLiked(false);
       setLikeCount((prevCount) => prevCount - 1);
+      addLike();
     } else {
       setIsLiked(true);
       setLikeCount((prevCount) => prevCount + 1);
@@ -59,21 +68,12 @@ const Post = (props) => {
   const addCommentHandler = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(
-        `/api/post/commentpost/${props.post._id}`,
-        {
-          comment,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const newComment = data?.success?.comments[0];
-      setShowComment((prevComments) => [newComment, ...prevComments]);
-      setComment("");
+      const { data } = await addComment({ postId: props?.post._id, comment });
+      const newComment =
+        data?.success?.comments[data?.success?.comments.length - 1];
+      setShowComment((prevComments) => {
+        return [...prevComments, newComment];
+      });
     } catch (error) {
       throw error;
     }
@@ -83,9 +83,49 @@ const Post = (props) => {
     (new Date() - new Date(props?.post?.createdAt)) / (1000 * 60 * 60 * 24)
   );
 
+  const handleClose = () => {
+    setShareModal(false);
+  };
+
+  const handleOpen = () => {
+    setShareModal(true);
+  };
+
   useEffect(() => {
-    setShowComment(props.post?.comments);
+    if (isSuccess) {
+      setComment("");
+    }
+  }, [isSuccess]);
+
+  useEffect(() => {
+    setShowComment(
+      props.post?.comments?.length > 3
+        ? props.post?.comments.slice(0, 3)
+        : props.post?.comments
+    );
+    setIsLiked(
+      props.post?.likes?.length
+        ? props.post?.likes.some((like) => {
+            return like.id === id;
+          })
+        : false
+    );
   }, []);
+
+  // Dropdown handling functions
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleShare = () => {
+    setShareModal(true);
+    handleMenuClose();
+    // Implement your share functionality here
+  };
 
   return (
     <Container
@@ -130,6 +170,20 @@ const Post = (props) => {
           <Typography fontWeight="lg">
             {props.post?.postedBy?.name || props?.name}
           </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton
+            onClick={handleMenuClick}
+            sx={{ background: "white", color: "black" }}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={handleShare}>Share</MenuItem>
+          </Menu>
         </CardContent>
         <CardOverflow>
           <AspectRatio>
@@ -174,10 +228,12 @@ const Post = (props) => {
               size="sm"
               onClick={handleLike}
             >
-              {isLiked ? <FavoriteIcon /> : <FavoriteBorder />} {likeCount}
+              {isLiked ? <FavoriteIcon /> : <FavoriteBorder />}{" "}
+              {` ${likeCount}`}
             </IconButton>
             <IconButton variant="plain" color="neutral" size="sm">
-              <ModeCommentOutlined /> {props.post?.comments?.length}
+              <ModeCommentOutlined sx={{ paddingRight: "0.2rem" }} />{" "}
+              {` ${props.post?.comments?.length}`}
             </IconButton>
           </Box>
         </CardContent>
@@ -188,20 +244,43 @@ const Post = (props) => {
               color="neutral"
               fontWeight="lg"
               textColor="text.primary"
+              style={{ paddingRight: "0.3rem" }}
             >
               {props.post?.postedBy?.name}
             </Link>
             {props.post?.caption}
           </Typography>
-          {showComment
-            ?.slice()
-            .reverse()
-            .map((comment) => (
-              <Typography sx={{ height: "1.2rem" }}>
-                <b>{comment?.user?.name} </b>
-                {comment?.comment}
-              </Typography>
-            ))}
+
+          {showComment?.slice().map((comment) => (
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ paddingRight: "0.3rem" }}>
+                <span style={{ fontWeight: 500 }}>{comment?.user?.name}</span>
+                <span> {comment?.comment}</span>
+              </span>
+              <span style={{ cursor: "pointer" }}>
+                <DeleteIcon onClick={() => {}} />
+              </span>
+            </div>
+          ))}
+
+          {props.post?.comments?.length > 3 && (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <span
+                style={{
+                  cursor: "pointer",
+                  display: "inline-block",
+                  width: "auto",
+                }}
+                onClick={() => {
+                  showComment.length > 3
+                    ? setShowComment(props.post?.comments.slice(0, 3))
+                    : setShowComment(props.post?.comments);
+                }}
+              >
+                View {showComment.length > 3 ? "Less" : "More"}
+              </span>
+            </div>
+          )}
 
           <Link
             component="button"
@@ -238,7 +317,10 @@ const Post = (props) => {
             justifyContent: "flex-start",
           }}
         >
-          <form onSubmit={addCommentHandler} style={{ display: "flex" }}>
+          <form
+            onSubmit={addCommentHandler}
+            style={{ display: "flex", width: "100%" }}
+          >
             <Input
               variant="plain"
               size="sm"
@@ -255,6 +337,45 @@ const Post = (props) => {
           </form>
         </CardOverflow>
       </Card>
+      <Modal
+        open={shareModal}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            background: "white",
+            border: "2px solid #000",
+            borderRadius: "2rem",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Share
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 1 }}>
+            <List
+              sx={{ width: "100%", maxWidth: 360 }}
+              component="nav"
+              aria-labelledby="nested-list-subheader"
+            >
+              <ListItemButton>
+                <ListItemIcon sx={{ minWidth: "37px" }}>
+                  <WhatsAppIcon sx={{ color: "green" }} />
+                </ListItemIcon>
+                <ListItemText primary="Whatsapp" />
+              </ListItemButton>
+            </List>
+          </Typography>
+        </Box>
+      </Modal>
     </Container>
   );
 };

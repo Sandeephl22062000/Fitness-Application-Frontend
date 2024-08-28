@@ -23,9 +23,27 @@ const postsApi = createApi({
         body: credentials,
       }),
     }),
+    addComment: builder.mutation({
+      query: ({ postId, comment }) => ({
+        url: `/commentpost/${postId}`,
+        method: "POST",
+        body: { comment },
+      }),
+    }),
+    addLike: builder.mutation({
+      query: ({ postId }) => ({
+        url: `/likepost/${postId}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
-export const { useGetPostsQuery, useCreatePostsMutation } = postsApi;
+export const {
+  useGetPostsQuery,
+  useCreatePostsMutation,
+  useAddCommentMutation,
+  useAddLikeMutation,
+} = postsApi;
 
 export { postsApi };

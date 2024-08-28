@@ -46,7 +46,7 @@ const App = () => {
             }
           />
           <Route
-            path="/food/calculateCalories"
+            path="/food/calculateCalories/:maintainceCalories"
             element={
               <Protected isLoggedIn={isLoggedIn}>
                 <CalorieDetail />

@@ -10,26 +10,23 @@ import {
   Select,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { calculateCalories, priorFoodDetails } from "../../store/food";
-import { useToasts } from "react-toast-notifications";
 import { useEffect } from "react";
-import PriorInfoModal from "./priorData";
 import userInputValidation from "../schema/userInputFood";
-import { useRequireCaloriesMutation } from "../../api/dietApi";
+import {
+  usePreviousDataMutation,
+  useRequireCaloriesMutation,
+} from "../../api/dietApi";
 
 const UserInput = () => {
-  const [requireCalories] = useRequireCaloriesMutation();
-  const { addToast } = useToasts();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [dataAvailable, setDataAvailable] = useState(false);
+  const [requireCalories, { data, isSuccess, isLoading }] =
+    useRequireCaloriesMutation();
+  const [previousData, { data: previouslyAddedData }] =
+    usePreviousDataMutation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const token = useSelector((state) => state?.user?.token);
-  const priorData = useSelector((state) => state?.food?.priorUserDetails);
+  const previousDataArray =
+    previouslyAddedData?.data[previouslyAddedData?.data.length - 1];
 
   const formik = useFormik({
     initialValues: {
@@ -40,55 +37,47 @@ const UserInput = () => {
       activity: "",
     },
     validationSchema: userInputValidation,
-    onSubmit: (values, { resetForm }) => {
-      requireCalories({
+    onSubmit: async (values, { resetForm }) => {
+      const data = await requireCalories({
         weight: values.weight,
         height: values.height,
         age: values.age,
         gender: values.gender,
         activity: values.activity,
       });
-      resetForm();
-      navigate(`/food/calculateCalories`);
     },
   });
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    dispatch(priorFoodDetails(token)).then((result) => {
-      setDataAvailable(result.payload);
+    formik.setValues({
+      height: previousDataArray?.height || "",
+      weight: previousDataArray?.weight || "",
+      age: previousDataArray?.age || "",
+      gender: previousDataArray?.gender || "",
+      activity: previousDataArray?.activity || "",
     });
+  }, [previousDataArray]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    previousData();
   }, []);
 
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-  };
-  const openModal = () => {
-    setModalOpen(true);
-  };
+  useEffect(() => {
+    if (isSuccess) {
+      navigate(`/food/calculateCalories/${data?.data}`);
+      formik.setValues({
+        height: "",
+        weight: "",
+        age: "",
+        gender: "",
+        activity: "",
+      });
+    }
+  }, [isSuccess]);
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
   return (
     <>
-      {dataAvailable?.data?.length > 0 && (
-        <Box sx={{ textAlign: "center", margin: "50px" }}>
-          <PriorInfoModal
-            open={modalOpen}
-            handleClose={closeModal}
-            priorDataArray={priorData?.data}
-          />
-        </Box>
-      )}
       <Typography variant="h5" align="center" sx={{ mt: 4 }}>
         Provide your details to calculate your Calories requirement
       </Typography>
@@ -216,35 +205,6 @@ const UserInput = () => {
             </Button>
           </Box>
         </form>
-        {/* {!priorData?.data?.length == 0 && ( */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-            height: "5rem",
-            width: "100%",
-            marginBottom: "5rem",
-            paddingTop: { xm: "2rem", xs: "4rem" },
-          }}
-        >
-          <Typography>OR</Typography>
-          <h4 style={{ textAlign: "center" }}>
-            Click here to use your previously submitted data
-          </h4>
-          <Button
-            onClick={openModal}
-            sx={{
-              color: "white",
-              background: "black",
-              "&:hover": { background: "black" },
-            }}
-          >
-            Click Here
-          </Button>
-        </Box>
-        {/* )} */}
       </Container>
     </>
   );
